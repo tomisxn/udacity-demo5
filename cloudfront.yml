@@ -1,14 +1,16 @@
 Parameters:
-# Existing Bucket name
-PipelineID:
-  Description: Existing Bucket name
-  Type: String
+  # Existing Bucket name
+  PipelineID:
+    Description: Existing Bucket name
+    Type: String
+
 Resources:
   CloudFrontOriginAccessIdentity:
     Type: "AWS::CloudFront::CloudFrontOriginAccessIdentity"
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: Origin Access Identity for Serverless Static Website
+  
   WebpageCDN:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -25,6 +27,7 @@ Resources:
             QueryString: False
           TargetOriginId: webpage
           ViewerProtocolPolicy: allow-all
+
 Outputs:
   PipelineID:
     Value: !Sub ${PipelineID}
