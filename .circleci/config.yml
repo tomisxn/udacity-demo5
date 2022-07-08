@@ -4,8 +4,20 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
 
+commands:
+  # Exercise - Rollback
+  destroy_environment:
+    steps:
+      - run:
+          name: Destroy environment
+          # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable 
+          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID 
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7}
+
 jobs:
-  install-aws-cli:
+  install_aws_cli:
     docker:
       - image: cimg/python:3.10.5
     steps:
@@ -15,7 +27,7 @@ jobs:
           command: |
             pip3 install awscli
   
-  configure-aws-iam-profile:
+  configure_aws_iam_profile:
     machine:
       image: ubuntu-2004:202010-01 # recommended linux image
     steps:
@@ -37,16 +49,30 @@ jobs:
             command: |
               aws cloudformation deploy \
               --template-file template.yml \
-              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7} \
               --region ${AWS_DEFAULT_REGION}
+  
+  # Exercise: Smoke Testing
+  smoke_test:
+  docker:
+    - image: alpine:latest
+  steps:
+    - run:
+        name: Test job
+        # Fail the job intentionally to simulate an error.
+        command:  return 1
+    - destroy_environment
 
 workflows:
   my-workflow:
     jobs:
-      - install-aws-cli
-      - configure-aws-iam-profile:
+      - install_aws_cli
+      - configure_aws_iam_profile:
           requires:
-            - install-aws-cli
+            - install_aws_cli
       - create_infrastructure:
           requires:
-            - configure-aws-iam-profile
+            - configure_aws_iam_profile
+      - smoke_test:
+          requires:
+            - create_infrastructure
