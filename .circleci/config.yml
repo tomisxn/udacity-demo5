@@ -60,8 +60,8 @@ jobs:
           name: Test job
           # Fail the job intentionally to simulate an error.
           command:  return 1
-      - destroy_environment:
-        when: on_fail
+      - destroy_environment
+          when: on_fail
 
 workflows:
   my-workflow:
