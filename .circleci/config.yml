@@ -91,6 +91,9 @@ workflows:
       - create_infrastructure:
           requires:
             - configure_aws_iam_profile
-      - smoke_test:
+      - create_cloudfront:
           requires:
             - create_infrastructure
+      #- smoke_test:
+      #    requires:
+      #      - create_infrastructure
