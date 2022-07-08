@@ -52,6 +52,20 @@ jobs:
               --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7} \
               --region ${AWS_DEFAULT_REGION}
   
+  create_cloudfront: 
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: Create Cloudfront
+            command: |
+              aws cloudformation deploy \
+              --template-file cloudfront.yml \
+              --stack-name production-distro \
+              --parameter-overrides PipelineID="${S3_BUCKET_NAME}" \ # Name of the S3 bucket you created manually.
+              --tags project=udapeople &
+  
   # Exercise: Smoke Testing
   smoke_test:
     docker:
