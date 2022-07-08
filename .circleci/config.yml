@@ -60,7 +60,10 @@ jobs:
           name: Test job
           # Fail the job intentionally to simulate an error.
           command:  return 1
-      - destroy_environment
+      #- destroy_environment
+      - run:
+          name: echo stack ID
+          command: echo ${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
 
 workflows:
