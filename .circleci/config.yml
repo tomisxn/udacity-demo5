@@ -4,20 +4,8 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
 
-commands:
-  # Exercise - Rollback
-  destroy_environment:
-    steps:
-      - run:
-          name: Destroy environment
-          # ${CIRCLE_WORKFLOW_ID} is a Built-in environment variable 
-          # ${CIRCLE_WORKFLOW_ID:0:5} takes the first 5 chars of the variable CIRCLE_CI_WORKFLOW_ID 
-          when: on_fail
-          command: |
-            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7}
-
 jobs:
-  install_aws_cli:
+  install-aws-cli:
     docker:
       - image: cimg/python:3.10.5
     steps:
@@ -27,7 +15,7 @@ jobs:
           command: |
             pip3 install awscli
   
-  configure_aws_iam_profile:
+  configure-aws-iam-profile:
     machine:
       image: ubuntu-2004:202010-01 # recommended linux image
     steps:
@@ -38,38 +26,27 @@ jobs:
             aws configure set aws_access_key_id ${AWS_ACCESS_KEY_ID}
             aws configure set aws_secret_access_key ${AWS_SECRET_ACCESS_KEY}
             aws configure set region ${AWS_DEFAULT_REGION}
-
-  create_infrastructure:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Create Cloudformation Stack
-          command: |
-            aws cloudformation deploy \
-            --template-file template.yml \
-            --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7} \
-            --${AWS_DEFAULT_REGION}
   
-  smoke_test:
-    docker:
-      - image: alpine:latest
-    steps:
-      - run:
-          name: Test job
-          # Fail the job intentionally to simulate an error.
-          command: return 1
-      - destroy_environment
+  create_infrastructure: 
+      docker:
+        - image: amazon/aws-cli
+      steps:
+        - checkout
+        - run:
+            name: Create Cloudformation Stack
+            command: |
+              aws cloudformation deploy \
+              --template-file template.yml \
+              --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:5} \
+              --region ${AWS_DEFAULT_REGION}
 
 workflows:
   my-workflow:
     jobs:
-      - install_aws_cli
-      - configure_aws_iam_profile:
+      - install-aws-cli
+      - configure-aws-iam-profile:
           requires:
-            - install_aws_cli
+            - install-aws-cli
       - create_infrastructure:
           requires:
-            - configure_aws_iam_profile
-      - smoke_test
+            - configure-aws-iam-profile
