@@ -54,17 +54,18 @@ jobs:
   # Exercise: Smoke Testing
   smoke_test:
     docker:
-      - image: alpine:latest
+      - image: amazon/aws-cli
     steps:
       - run:
           name: Test job
           # Fail the job intentionally to simulate an error.
           command:  return 1
-      #- destroy_environment
-      - run:
-          name: echo stack ID
-          command: echo ${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy_environment
           when: on_fail
+      #- run:
+      #    name: echo stack ID
+      #    command: echo ${CIRCLE_WORKFLOW_ID:0:7}
+      #    when: on_fail
 
 workflows:
   my-workflow:
